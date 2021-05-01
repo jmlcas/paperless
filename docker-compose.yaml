@@ -1,39 +1,31 @@
-version: '2'
+version: '3.3'
 
 services:
 
     webserver:
         image: thepaperlessproject/paperless
-        restart: always
+        restart: unless-stopped
         ports:
-            - "8080:8000"
-        healthcheck:
-            test: ["CMD", "curl" , "-f", "http://localhost:8000"]
-            interval: 30s
-            timeout: 10s
-            retries: 5
+            - "8200:8000"
         volumes:
             - data:/usr/src/paperless/data
             - media:/usr/src/paperless/media
             - ./consume:/consume
-        env_file: docker-compose.env
         environment:
             - PAPERLESS_OCR_LANGUAGES=spa
             - USERMAP_UID=1000
             - USERMAP_GID=1000
-        command: ["runserver", "--insecure", "--noreload", "0.0.0.0:8000"]
+        command: ["gunicorn", "-b", "0.0.0.0:8000"]        
 
     consumer:
         image: thepaperlessproject/paperless
-        restart: always
+        restart: unless-stopped
         depends_on:
             - webserver
-                condition: service_healthy
         volumes:
             - data:/usr/src/paperless/data
             - media:/usr/src/paperless/media
             - ./consume:/consume
-        env_file: docker-compose.env
         command: ["document_consumer"]
         environment:
             - PAPERLESS_OCR_LANGUAGES=spa
