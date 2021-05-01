@@ -1,0 +1,49 @@
+version: '2'
+
+services:
+
+    webserver:
+        image: thepaperlessproject/paperless
+        restart: always
+        ports:
+            - "8080:8000"
+        healthcheck:
+            test: ["CMD", "curl" , "-f", "http://localhost:8000"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+        volumes:
+            - data:/usr/src/paperless/data
+            - media:/usr/src/paperless/media
+            - ./consume:/consume
+        env_file: docker-compose.env
+        environment:
+            - PAPERLESS_OCR_LANGUAGES=spa
+            - USERMAP_UID=1000
+            - USERMAP_GID=1000
+        command: ["runserver", "--insecure", "--noreload", "0.0.0.0:8000"]
+
+    consumer:
+        image: thepaperlessproject/paperless
+        restart: always
+        depends_on:
+            - webserver
+                condition: service_healthy
+        volumes:
+            - data:/usr/src/paperless/data
+            - media:/usr/src/paperless/media
+            - ./consume:/consume
+        env_file: docker-compose.env
+        command: ["document_consumer"]
+        environment:
+            - PAPERLESS_OCR_LANGUAGES=spa
+            - USERMAP_UID=1000
+            - USERMAP_GID=1000
+            - PAPERLESS_CONVERT_MEMORY_LIMIT=32000000
+            - PAPERLESS_CONVERT_TMPDIR=/var/tmp
+        tmpfs:
+            - /tmp
+
+volumes:
+    data:
+    media:
