@@ -16,8 +16,6 @@ services:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
       POSTGRES_PASSWORD: paperless
-      PAPERLESS_OCR_LANGUAGE: spa
-      PAPERLESS_TIME_ZONE: Europe/Madrid
 
   webserver:
     image: jonaswinkler/paperless-ng:1.4.2
@@ -43,21 +41,19 @@ services:
     environment:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
-      PAPERLESS_OCR_LANGUAGE: spa
-      PAPERLESS_TIME_ZONE: Europe/Madrid
 #     PAPERLESS_TIKA_ENABLED: 1
 #     PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
 #     PAPERLESS_TIKA_ENDPOINT: http://tika:9998
 
 # gotenberg:
-#     image: thecodingmachine/gotenberg
-#     restart: unless-stopped
-#     environment:
-#       DISABLE_GOOGLE_CHROME: 1
+#   image: thecodingmachine/gotenberg
+#   restart: unless-stopped
+#   environment:
+#     DISABLE_GOOGLE_CHROME: 1
 
-#  tika:
-#    image: apache/tika
-#    restart: unless-stopped     
+# tika:
+#   image: apache/tika
+#   restart: unless-stopped     
 
 volumes:
   data:
