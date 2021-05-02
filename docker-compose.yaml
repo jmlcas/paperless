@@ -1,41 +1,50 @@
-version: '3.3'
+version: "3.4"
 
 services:
+  
+  broker:
+    image: redis:6.0
+    restart: unless-stopped
 
-    webserver:
-        image: thepaperlessproject/paperless
-        restart: unless-stopped
-        ports:
-            - "8200:8000"
-        volumes:
-            - data:/usr/src/paperless/data
-            - media:/usr/src/paperless/media
-            - ./consume:/consume
-        environment:
-            - PAPERLESS_OCR_LANGUAGES=spa
-            - USERMAP_UID=1000
-            - USERMAP_GID=1000
-        command: ["gunicorn", "-b", "0.0.0.0:8000"]        
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless
+      PAPERLESS_OCR_LANGUAGE: spa
+      PAPERLESS_TIME_ZONE: Europe/Madrid
 
-    consumer:
-        image: thepaperlessproject/paperless
-        restart: unless-stopped
-        depends_on:
-            - webserver
-        volumes:
-            - data:/usr/src/paperless/data
-            - media:/usr/src/paperless/media
-            - ./consume:/consume
-        command: ["document_consumer"]
-        environment:
-            - PAPERLESS_OCR_LANGUAGES=spa
-            - USERMAP_UID=1000
-            - USERMAP_GID=1000
-            - PAPERLESS_CONVERT_MEMORY_LIMIT=32000000
-            - PAPERLESS_CONVERT_TMPDIR=/var/tmp
-        tmpfs:
-            - /tmp
+  webserver:
+    image: jonaswinkler/paperless-ng:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - broker
+    ports:
+      - 8200:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - data:/usr/src/paperless/data
+      - media:/usr/src/paperless/media
+      - ./export:/usr/src/paperless/export
+      - ./consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_OCR_LANGUAGE: spa
+      PAPERLESS_TIME_ZONE: Europe/Madrid
 
 volumes:
-    data:
-    media:
+  data:
+  media:
+  pgdata:
+ 
+
