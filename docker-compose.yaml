@@ -11,6 +11,7 @@ services:
     restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
+    env_file: docker-compose.env      
     environment:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
@@ -19,11 +20,13 @@ services:
       PAPERLESS_TIME_ZONE: Europe/Madrid
 
   webserver:
-    image: jonaswinkler/paperless-ng:latest
+    image: jonaswinkler/paperless-ng:1.4.2
     restart: unless-stopped
     depends_on:
       - db
       - broker
+#     - gotenberg
+#     - tika      
     ports:
       - 8200:8000
     healthcheck:
@@ -36,11 +39,25 @@ services:
       - media:/usr/src/paperless/media
       - ./export:/usr/src/paperless/export
       - ./consume:/usr/src/paperless/consume
+    env_file: docker-compose.env      
     environment:
       PAPERLESS_REDIS: redis://broker:6379
       PAPERLESS_DBHOST: db
       PAPERLESS_OCR_LANGUAGE: spa
       PAPERLESS_TIME_ZONE: Europe/Madrid
+#     PAPERLESS_TIKA_ENABLED: 1
+#     PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+#     PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+
+# gotenberg:
+#     image: thecodingmachine/gotenberg
+#     restart: unless-stopped
+#     environment:
+#       DISABLE_GOOGLE_CHROME: 1
+
+#  tika:
+#    image: apache/tika
+#    restart: unless-stopped     
 
 volumes:
   data:
