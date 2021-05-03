@@ -3,7 +3,7 @@ version: "3.4"
 services:
   
   broker:
-    image: redis:6.0
+    image: redis:6
     restart: unless-stopped
 
   db:
@@ -46,7 +46,7 @@ services:
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
 
   gotenberg:
-    image: thecodingmachine/gotenberg
+    image: thecodingmachine/gotenberg:6
     restart: unless-stopped
     environment:
       DISABLE_GOOGLE_CHROME: 1
