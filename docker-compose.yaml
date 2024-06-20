@@ -7,11 +7,10 @@ services:
       - redisdata:/data
 
   db:
-    image: postgres:13
+    image: docker.io/library/postgres:16
     restart: unless-stopped
     volumes:
       - pgdata:/var/lib/postgresql/data
-    env_file: docker-compose.env      
     environment:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
